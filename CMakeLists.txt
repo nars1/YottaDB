@@ -21,6 +21,10 @@
 cmake_minimum_required(VERSION 2.8.5)
 project(YDB C ASM)
 
+# By default, cmake uses -rdynamic for C link-time flags. That is not needed here and bloats executable sizes unnecessarily.
+# So disable that by defining the link-time C flags to the null string.
+set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS  )
+
 # Max optimization level is -O2
 get_property(languages GLOBAL PROPERTY ENABLED_LANGUAGES)
 foreach(lang ${languages})
@@ -898,9 +902,11 @@ install(FILES sr_unix/lowerc_cp.sh DESTINATION ${YDB_INSTALL_DIR}
   RENAME lowerc_cp
   )
 
-if (EXISTS ${YDB_SOURCE_DIR}/COPYING)
-  install(FILES COPYING DESTINATION ${YDB_INSTALL_DIR})
-endif()
+foreach(d COPYING README.md)
+  if (EXISTS ${YDB_SOURCE_DIR}/${d})
+    install(FILES ${d} DESTINATION ${YDB_INSTALL_DIR})
+  endif()
+endforeach()
 
 add_custom_target(place_files ALL DEPENDS ${files_to_place})
 
